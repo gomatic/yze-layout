@@ -40,7 +40,16 @@ var Registration = goyze.Registration{
 var hasPackage = osHasPackage
 
 // run reports when a command or domain package has no counterpart package.
+//
+// A package whose only Go files are external test files (an examples-only
+// directory) is delivered by the driver as a base-package pass with no syntax
+// files. There is no file to locate the package directory or anchor a report
+// on, and such a directory is never a three-tier command or domain package, so
+// the pass is a no-op rather than an index-out-of-range panic on pass.Files[0].
 func run(pass *analysis.Pass) (any, error) {
+	if len(pass.Files) == 0 {
+		return nil, nil
+	}
 	counterpart, message, ok := counterpartOf(packageDir(pass))
 	if ok && !hasPackage(counterpart) {
 		pass.Reportf(pass.Files[0].Name.Pos(), "%s", message)
