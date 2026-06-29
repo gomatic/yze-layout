@@ -1,0 +1,6 @@
+This directory exists but holds no Go source, so it is not a Go package.
+
+It backs the layout analyzer's assertion that a command's counterpart must be a
+real Go package (a directory with Go source), not merely a bare directory: the
+sibling internal/app/commands/stub package must still be reported as missing its
+internal/domain counterpart.

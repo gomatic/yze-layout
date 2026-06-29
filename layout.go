@@ -29,14 +29,20 @@ var Analyzer = &analysis.Analyzer{
 var Registration = goyze.Registration{
 	Name:       "layout",
 	Categories: []goyze.Category{"structure"},
-	URL:        "https://docs.gomatic.dev/yze/go/layout",
+	URL:        "https://docs.gomatic.dev/yze/layout",
 	Analyzer:   Analyzer,
 }
 
-// run reports when a command or domain package has no counterpart directory.
+// hasPackage reports whether a directory is a real Go package. It is a
+// package-level seam, defaulting to the filesystem implementation, so tests
+// drive the existence decision with a fake and the analysis stays hermetic
+// (no direct OS reach-through, per the gomatic dependency-injection standard).
+var hasPackage = osHasPackage
+
+// run reports when a command or domain package has no counterpart package.
 func run(pass *analysis.Pass) (any, error) {
 	counterpart, message, ok := counterpartOf(packageDir(pass))
-	if ok && !isDir(counterpart) {
+	if ok && !hasPackage(counterpart) {
 		pass.Reportf(pass.Files[0].Name.Pos(), "%s", message)
 	}
 	return nil, nil
@@ -44,8 +50,12 @@ func run(pass *analysis.Pass) (any, error) {
 
 // packageDir returns the filesystem directory of the analyzed package.
 func packageDir(pass *analysis.Pass) string {
-	first := pass.Fset.File(pass.Files[0].Pos()).Name()
-	return first[:strings.LastIndex(first, "/")]
+	name := pass.Fset.File(pass.Files[0].Pos()).Name()
+	idx := strings.LastIndex(name, "/")
+	if idx < 0 {
+		return name
+	}
+	return name[:idx]
 }
 
 // counterpartOf returns the directory that must exist for a command or domain
@@ -63,8 +73,24 @@ func counterpartOf(dir string) (string, string, bool) {
 	return "", "", false
 }
 
-// isDir reports whether path is an existing directory.
-func isDir(path string) bool {
-	info, err := os.Stat(path)
-	return err == nil && info.IsDir()
+// osHasPackage reports whether dir contains at least one non-test Go source
+// file, i.e. is a real Go package rather than a bare or empty directory. A
+// counterpart directory with no Go source does not satisfy the layout, so
+// existence alone is not enough.
+func osHasPackage(dir string) bool {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return false
+	}
+	for _, entry := range entries {
+		if !entry.IsDir() && isGoSource(entry.Name()) {
+			return true
+		}
+	}
+	return false
+}
+
+// isGoSource reports whether name is a non-test Go source filename.
+func isGoSource(name string) bool {
+	return strings.HasSuffix(name, ".go") && !strings.HasSuffix(name, "_test.go")
 }

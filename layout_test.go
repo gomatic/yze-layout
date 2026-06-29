@@ -15,6 +15,7 @@ func TestLayoutCorrespondence(t *testing.T) {
 		"m/internal/app/commands/greet",
 		"m/internal/domain/greet",
 		"m/internal/app/commands/orphan",
+		"m/internal/app/commands/stub",
 		"m/internal/domain/lonely",
 		"m/internal/util",
 	)
