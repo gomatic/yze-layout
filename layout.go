@@ -28,7 +28,6 @@ var Analyzer = &analysis.Analyzer{
 // Registration declares this analyzer to the yze framework.
 var Registration = goyze.Registration{
 	Name:       "layout",
-	Group:      "go",
 	Categories: []goyze.Category{"structure"},
 	URL:        "https://docs.gomatic.dev/yze/go/layout",
 	Analyzer:   Analyzer,

@@ -3,8 +3,9 @@
 package main
 
 import (
-	layout "github.com/gomatic/yze-go-layout"
 	"golang.org/x/tools/go/analysis/singlechecker"
+
+	layout "github.com/gomatic/yze-layout"
 )
 
 // run is the analysis entry point, indirected so the binary's wiring is testable
