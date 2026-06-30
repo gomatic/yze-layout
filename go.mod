@@ -1,4 +1,4 @@
-module github.com/gomatic/yze-layout
+module github.com/gomatic/yze-go-layout
 
 go 1.26.4
 

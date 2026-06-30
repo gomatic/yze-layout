@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/tools/go/analysis/analysistest"
 
-	layout "github.com/gomatic/yze-layout"
+	layout "github.com/gomatic/yze-go-layout"
 )
 
 func TestLayoutCorrespondence(t *testing.T) {

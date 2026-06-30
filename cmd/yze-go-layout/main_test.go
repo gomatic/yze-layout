@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/tools/go/analysis"
 
-	layout "github.com/gomatic/yze-layout"
+	layout "github.com/gomatic/yze-go-layout"
 )
 
 func TestMainRunsTheAnalyzer(t *testing.T) {
