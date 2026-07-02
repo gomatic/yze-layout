@@ -50,7 +50,7 @@ func run(pass *analysis.Pass) (any, error) {
 	if len(pass.Files) == 0 {
 		return nil, nil
 	}
-	counterpart, message, ok := counterpartOf(packageDir(pass))
+	counterpart, message, ok := counterpartOf(dirParam(packageDir(pass)))
 	if ok && !hasPackage(counterpart) {
 		pass.Reportf(pass.Files[0].Name.Pos(), "%s", message)
 	}
@@ -67,16 +67,19 @@ func packageDir(pass *analysis.Pass) string {
 	return name[:idx]
 }
 
+// dirParam names the dir parameter of counterpartOf; rename it to the real domain concept.
+type dirParam string
+
 // counterpartOf returns the directory that must exist for a command or domain
 // package, the diagnostic to emit if it is missing, and whether dir is a
 // three-tier package at all.
-func counterpartOf(dir string) (string, string, bool) {
-	if strings.Contains(dir, commandSegment) {
-		return strings.Replace(dir, commandSegment, domainSegment, 1),
+func counterpartOf(dir dirParam) (string, string, bool) {
+	if strings.Contains(string(dir), commandSegment) {
+		return strings.Replace(string(dir), commandSegment, domainSegment, 1),
 			"command package has no corresponding internal/domain package", true
 	}
-	if strings.Contains(dir, domainSegment) {
-		return strings.Replace(dir, domainSegment, commandSegment, 1),
+	if strings.Contains(string(dir), domainSegment) {
+		return strings.Replace(string(dir), domainSegment, commandSegment, 1),
 			"domain package has no corresponding internal/app/commands package", true
 	}
 	return "", "", false
@@ -92,14 +95,17 @@ func osHasPackage(dir string) bool {
 		return false
 	}
 	for _, entry := range entries {
-		if !entry.IsDir() && isGoSource(entry.Name()) {
+		if !entry.IsDir() && isGoSource(nameParam(entry.Name())) {
 			return true
 		}
 	}
 	return false
 }
 
+// nameParam names the name parameter of isGoSource; rename it to the real domain concept.
+type nameParam string
+
 // isGoSource reports whether name is a non-test Go source filename.
-func isGoSource(name string) bool {
-	return strings.HasSuffix(name, ".go") && !strings.HasSuffix(name, "_test.go")
+func isGoSource(name nameParam) bool {
+	return strings.HasSuffix(string(name), ".go") && !strings.HasSuffix(string(name), "_test.go")
 }
