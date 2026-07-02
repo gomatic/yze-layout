@@ -6,7 +6,6 @@
 package layout
 
 import (
-	"os"
 	"strings"
 
 	goyze "github.com/gomatic/go-yze"
@@ -32,12 +31,6 @@ var Registration = goyze.Registration{
 	URL:        "https://docs.gomatic.dev/yze/layout",
 	Analyzer:   Analyzer,
 }
-
-// hasPackage reports whether a directory is a real Go package. It is a
-// package-level seam, defaulting to the filesystem implementation, so tests
-// drive the existence decision with a fake and the analysis stays hermetic
-// (no direct OS reach-through, per the gomatic dependency-injection standard).
-var hasPackage = osHasPackage
 
 // run reports when a command or domain package has no counterpart package.
 //
@@ -73,39 +66,14 @@ type pkgDir string
 // counterpartOf returns the directory that must exist for a command or domain
 // package, the diagnostic to emit if it is missing, and whether dir is a
 // three-tier package at all.
-func counterpartOf(dir pkgDir) (string, string, bool) {
+func counterpartOf(dir pkgDir) (pkgDir, string, bool) {
 	if strings.Contains(string(dir), commandSegment) {
-		return strings.Replace(string(dir), commandSegment, domainSegment, 1),
+		return pkgDir(strings.Replace(string(dir), commandSegment, domainSegment, 1)),
 			"command package has no corresponding internal/domain package", true
 	}
 	if strings.Contains(string(dir), domainSegment) {
-		return strings.Replace(string(dir), domainSegment, commandSegment, 1),
+		return pkgDir(strings.Replace(string(dir), domainSegment, commandSegment, 1)),
 			"domain package has no corresponding internal/app/commands package", true
 	}
 	return "", "", false
-}
-
-// osHasPackage reports whether dir contains at least one non-test Go source
-// file, i.e. is a real Go package rather than a bare or empty directory. A
-// counterpart directory with no Go source does not satisfy the layout, so
-// existence alone is not enough.
-func osHasPackage(dir string) bool {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		return false
-	}
-	for _, entry := range entries {
-		if !entry.IsDir() && isGoSource(fileName(entry.Name())) {
-			return true
-		}
-	}
-	return false
-}
-
-// fileName is a bare file name within a package directory.
-type fileName string
-
-// isGoSource reports whether name is a non-test Go source filename.
-func isGoSource(name fileName) bool {
-	return strings.HasSuffix(string(name), ".go") && !strings.HasSuffix(string(name), "_test.go")
 }

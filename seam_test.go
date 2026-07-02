@@ -43,12 +43,12 @@ func TestRunResolvesCounterpartThroughSeam(t *testing.T) {
 
 	pass, messages := parsePass(t, "/m/internal/app/commands/greet/command.go", "package greet")
 
-	hasPackage = func(string) bool { return true }
+	hasPackage = func(pkgDir) bool { return true }
 	_, err := run(pass)
 	require.NoError(t, err)
 	assert.Empty(t, *messages)
 
-	hasPackage = func(string) bool { return false }
+	hasPackage = func(pkgDir) bool { return false }
 	_, err = run(pass)
 	require.NoError(t, err)
 	assert.Len(t, *messages, 1)
